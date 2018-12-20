@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Usage: 
+# flax --user=ubuntu --key=~/.ssh/private-key.pem webservers/0
+# flax --user=ubuntu --key=~/.ssh/private-key.pem --put=/Users/me/work/index.html:/var/www/html/work/index.html webservers/0
+# flax --user=ubuntu --key=~/.ssh/private-key.pem --get=/var/www/html/work/index.html:/Users/me/work/index.html webservers/0
+
 function go_to_host {
     ssh -i "${KEY}" "${REMOTE_USER}@${REMOTE_HOST}"
 }
