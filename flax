@@ -1,19 +1,19 @@
 #!/bin/bash
 
 function go_to_host {
-    ssh -i "${KEY}" "${USER}@${TARGET_HOST}"
+    ssh -i "${KEY}" "${REMOTE_USER}@${REMOTE_HOST}"
 }
 
 function scp_from_host {
     source_file=$(echo $1 | cut -f 1 -d':')
     target_file=$(echo $1 | cut -f 2 -d':')
-    scp -r -i "${KEY}" "${USER}@${TARGET_HOST}:${source_file}" "${target_file}"
+    scp -r -i "${KEY}" "${REMOTE_USER}@${REMOTE_HOST}:${source_file}" "${target_file}"
 }
 
 function scp_to_host {
     source_file=$(echo $1 | cut -f 1 -d':')
     target_file=$(echo $1 | cut -f 2 -d':')
-    scp -i $4 "${source_file}" "$USER@${TARGET_HOST}:${target_file}"
+    scp -i $4 "${source_file}" "$REMOTE_USER@${REMOTE_HOST}:${target_file}"
 }
 
 CMD=0
@@ -22,24 +22,44 @@ GROUP=$(echo ${!#} | cut -d"/" -f1)
 INDEX=$(echo ${!#} | cut -d"/" -f2)
 
 for param; do
-    case $param in
-	--inventory )   INVENTORY=$2; shift; shift ;;
-	--user )        USER=$2; shift; shift ;;
-	--key )         KEY=$2; shift; shift ;;
-	--get )         CMD=1; ARG=$2; shift; shift ;;
-	--put )         CMD=2; ARG=$2; shift; shift ;;
-	-- )            shift; break ;;
-	* )             break ;;
+    case $1 in
+	--inventory=*)   
+	    INVENTORY=$(echo $1 | sed 's/--inventory=//g'); 
+	    shift;;
+	--user=*)        
+	    REMOTE_USER=$(echo $1 | sed 's/--user=//g'); 
+	    shift;;
+	--key=*)         
+	    KEY=$(echo $1 | sed 's/--key=//g'); 
+	    shift ;;
+	--get=*)         
+	    CMD=1; 
+	    ARG=$(echo $1 | sed 's/--get//g'); 
+	    shift ;;
+	--put=*)
+            CMD=2; 
+	    ARG=$(echo $1 | sed 's/--put//g'); 
+	    shift ;;
+	--)
+            shift; 
+	    break ;;
+	-*) 
+	    echo "Error: unknown option $1"
+            break ;;
     esac
 done
 
 [ -z ${KEY} ] && echo "Error: no key provided" && exit 1
-[ -z ${USER} ] && echo "Error: no user name provided" && exit 1
+[ -z ${REMOTE_USER} ] && echo "Error: no user name provided" && exit 1
+[ ! -f ${INVENTORY} ] && echo "Error: no inventory found: ${INVENTORY}"
+[ -z ${GROUP} ] && echo "Error: no group provided" && exit 1
+[ -z ${INDEX} ] && echo "Error: no index provided" && exit 1
 
-TARGET_HOST=$(ansible-inventory --inventory "${INVENTORY}" --list | jq ".$GROUP.hosts[$INDEX]" | tr -d '"')
+REMOTE_HOST=$(ansible-inventory --inventory "${INVENTORY}" --list | jq ".$GROUP.hosts[$INDEX]" | tr -d '"')
 
 case ${CMD} in
     0)  go_to_host;;
     1)  scp_from_host ${ARG};;
     2)  scp_to_host ${ARG};;
 esac
+
