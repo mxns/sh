@@ -1,12 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 while read i; do
-    exec 3</dev/tty
-    echo -n "$i? (y/n) " >/dev/tty
-    read -u 3 response
+    printf %s "$i? (y/n) " >/dev/tty
+    read response </dev/tty
     case $response in
-    	y) exec 3<&-; echo $i;;
-	q) exec 3<&-; break;;
-	*) exec 3<&-;;
+    	y) echo $i;;
+	q) break;;
     esac
 done

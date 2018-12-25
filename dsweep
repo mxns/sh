@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 docker ps -aq | xargs docker rm
 docker images --filter "dangling=true" --quiet | xargs docker rmi
