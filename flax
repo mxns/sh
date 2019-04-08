@@ -39,11 +39,11 @@ for param; do
 	    shift ;;
 	--get=*)         
 	    CMD=1; 
-	    ARG=$(echo $1 | sed 's/--get//g'); 
+	    ARG=$(echo $1 | sed 's/--get=//g'); 
 	    shift ;;
 	--put=*)
             CMD=2; 
-	    ARG=$(echo $1 | sed 's/--put//g'); 
+	    ARG=$(echo $1 | sed 's/--put=//g'); 
 	    shift ;;
 	--)
             shift; 
